@@ -97,23 +97,26 @@ func (e *ErrNode) UnwrapAsNode() *ErrNode {
 	return &res
 }
 
-// Rerurns `e`'s represented as json string.
-func (e *ErrNode) jsonln() string {
+// Returns `e`'s represented as json string.
+func (e *ErrNode) json() string {
+	res := fmt.Sprintf("\"error\": \"%v\"", e.Err)
+
 	if len(e.Data) > 0 {
-		res := fmt.Sprintf("{\"error\": \"%v\", \"data\": ", e.Err)
+		res += ", \"data\": "
 		data := "{"
 		for k, v := range e.Data {
 			data += fmt.Sprintf("\"%s\": \"%s\", ", k, v)
 		}
-		data = data[:len(data)-2] + "}}"
+		data = data[:len(data)-2] + "}"
 
-		return res + data + "\n"
+		res += data
 	}
-	return fmt.Sprintf("{\"error\": \"%v\"}\n", e.Err)
+
+	return fmt.Sprintf("{%s}", res)
 }
 
 func (e ErrNode) Error() string {
-	res := e.jsonln()
+	res := e.json() + "\n"
 	err := e
 	depth := 0
 	for err.next != nil {
@@ -122,9 +125,32 @@ func (e ErrNode) Error() string {
 		}
 		depth++
 
-		res += "  L " + err.next.jsonln()
+		res += "  L " + err.next.json() + "\n"
 		err = *err.next
 	}
 
 	return res
+}
+
+// Returns `e` and all of the errors it wraps as json string.
+func (e *ErrNode) JSON() string {
+	/* "errors": [
+		{...},
+		{...},
+		...
+	] */
+
+	// Note that errors will be represented as array to reduce nesting level,
+	// which might be critical for example storing errors in mongodb which has
+	// nesting level limit.
+	res := "\"errors\": [\n" + "    " + e.json()
+	err := e
+	for err.next != nil {
+		res += ",\n" + "    " + err.next.json()
+		err = err.next
+	}
+	res += "\n]"
+
+	return res
+
 }

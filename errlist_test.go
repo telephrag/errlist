@@ -2,6 +2,7 @@ package errlist
 
 import (
 	"fmt"
+	"log"
 	"testing"
 )
 
@@ -31,8 +32,11 @@ func TestSegfaults(t *testing.T) {
 	var hell error = nil
 
 	top.Wrap(middle).Wrap(bot).Wrap(hell) // wrap various kinds of `errNode`
-	top.UnwrapAsNode().Unwrap().Error()   // call `Error()` on underlying `error`
-	top.Error()                           // call `Error()` on childless `errNode`
+	log.Print(top.JSON())
+	log.Print(top.UnwrapAsNode().json())
+
+	top.UnwrapAsNode().Unwrap().Error() // call `Error()` on underlying `error`
+	top.Error()                         // call `Error()` on childless `errNode`
 
 	uw := top.UnwrapAsNode() // try getting value at non-existent key
 	str, _ := uw.Get("code")
@@ -40,4 +44,5 @@ func TestSegfaults(t *testing.T) {
 
 	// Check if UnwrapAsNode() actually returns top
 	top.UnwrapAsNode().UnwrapAsNode().UnwrapAsNode().UnwrapAsNode().UnwrapAsNode()
+
 }

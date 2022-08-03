@@ -5,7 +5,7 @@ import (
 )
 
 type ErrNode struct {
-	Data map[string]string
+	Data map[string]interface{}
 	Err  error
 	next *ErrNode
 }
@@ -21,7 +21,7 @@ func New(err error) (self *ErrNode) {
 	}
 
 	return &ErrNode{
-		Data: make(map[string]string),
+		Data: make(map[string]interface{}),
 		Err:  err,
 	}
 }
@@ -38,7 +38,7 @@ func (e *ErrNode) Set(k, v string) (self *ErrNode) {
 }
 
 // Gets data from underlying map at `k`.
-func (e *ErrNode) Get(k string) (v string, ok bool) {
+func (e *ErrNode) Get(k string) (v interface{}, ok bool) {
 	v, ok = e.Data[k]
 	return v, ok
 }

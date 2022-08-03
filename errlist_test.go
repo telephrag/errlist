@@ -39,8 +39,7 @@ func TestSegfaults(t *testing.T) {
 	top.Error()                         // call `Error()` on childless `errNode`
 
 	uw := top.UnwrapAsNode() // try getting value at non-existent key
-	str, _ := uw.Get("code")
-	str += "some string"
+	uw.Get("code")
 
 	// Check if UnwrapAsNode() actually returns top
 	top.UnwrapAsNode().UnwrapAsNode().UnwrapAsNode().UnwrapAsNode().UnwrapAsNode()

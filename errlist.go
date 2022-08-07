@@ -5,8 +5,8 @@ import (
 )
 
 type ErrNode struct {
-	Data map[string]interface{}
-	Err  error
+	Data map[string]interface{} `json:"data"`
+	Err  error                  `json:"error"`
 	next *ErrNode
 }
 
@@ -32,7 +32,7 @@ func (e *ErrNode) HasChildren() bool {
 }
 
 // Sets data inside underlying map at `k`.
-func (e *ErrNode) Set(k, v string) (self *ErrNode) {
+func (e *ErrNode) Set(k string, v interface{}) (self *ErrNode) {
 	e.Data[k] = v
 	return e
 }
@@ -130,27 +130,4 @@ func (e ErrNode) Error() string {
 	}
 
 	return res
-}
-
-// Returns `e` and all of the errors it wraps as json string.
-func (e *ErrNode) JSON() string {
-	/* "errors": [
-		{...},
-		{...},
-		...
-	] */
-
-	// Note that errors will be represented as array to reduce nesting level,
-	// which might be critical for example storing errors in mongodb which has
-	// nesting level limit.
-	res := "\"errors\": [\n" + "    " + e.json()
-	err := e
-	for err.next != nil {
-		res += ",\n" + "    " + err.next.json()
-		err = err.next
-	}
-	res += "\n]"
-
-	return res
-
 }

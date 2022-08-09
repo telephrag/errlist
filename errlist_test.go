@@ -65,13 +65,6 @@ func TestMarshalJSON(t *testing.T) {
 	}
 }
 
-func measureExecTime(f func()) {
-	start := time.Now()
-	f()
-	elapsed := time.Since(start)
-	fmt.Printf("finished in %d us\n", elapsed.Microseconds())
-}
-
 func generateValue() int64 {
 	val := rand.Int63() % 10000
 	ng := int64(runtime.NumGoroutine())

@@ -7,8 +7,8 @@ import (
 
 func (e *ErrNode) MarshalJSON() ([]byte, error) {
 	type temp struct {
-		Err  string                 `json:"error"`
 		Data map[string]interface{} `json:"data"`
+		Err  string                 `json:"error"`
 	}
 
 	obj := temp{

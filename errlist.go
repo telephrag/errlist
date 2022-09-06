@@ -1,12 +1,16 @@
 package errlist
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 )
 
+var ErrEmpty = errors.New("")
+
 type ErrNode struct {
-	Data map[string]interface{} `json:"data"`
-	Err  error                  `json:"error"`
+	Data map[string]interface{}
+	err  error
 	next *ErrNode
 }
 
@@ -17,12 +21,12 @@ func New(err error) (self *ErrNode) {
 
 	// to prevent segfault on Unwrap().Error() of childless node with this error inside
 	if err == nil {
-		err = fmt.Errorf("")
+		err = ErrEmpty
 	}
 
 	return &ErrNode{
 		Data: make(map[string]interface{}),
-		Err:  err,
+		err:  err,
 	}
 }
 
@@ -63,7 +67,7 @@ func (e *ErrNode) Wrap(child error) (self *ErrNode) {
 func (e *ErrNode) Unwrap() error {
 	tail := e
 	if tail.next == nil {
-		return tail.Err
+		return tail.err
 	}
 
 	var prev *ErrNode
@@ -97,21 +101,31 @@ func (e *ErrNode) UnwrapAsNode() *ErrNode {
 	return &res
 }
 
-// Returns `e`'s represented as json string.
+// Rerurns `e`'s represented as json string.
 func (e *ErrNode) json() string {
-	res := fmt.Sprintf("\"error\": \"%v\"", e.Err)
+	var res string
 
-	if len(e.Data) > 0 {
-		res += ", \"data\": "
-		data := "{"
-		for k, v := range e.Data {
-			data += fmt.Sprintf("\"%s\": \"%s\", ", k, v)
-		}
-		data = data[:len(data)-2] + "}"
-
-		res += data
+	if e.err != ErrEmpty {
+		res = fmt.Sprintf("\"error\": \"%v\"", e.err) // TODO: use json.Marshal()
 	}
 
+	if len(e.Data) > 0 {
+		var data string
+		for k, v := range e.Data {
+			vBytes, err := json.Marshal(v)
+			if err != nil {
+				data += fmt.Sprintf("\"%s\": \"%s\", ", k, err)
+			} else {
+				data += fmt.Sprintf("\"%s\": %s, ", k, string(vBytes))
+			}
+		}
+		data = fmt.Sprintf("{%s}", data[:len(data)-2])
+		if res != "" {
+			res = fmt.Sprintf("%s, \"data\": %s", res, data)
+		} else {
+			res = fmt.Sprintf("\"data\": %s", data)
+		}
+	}
 	return fmt.Sprintf("{%s}", res)
 }
 

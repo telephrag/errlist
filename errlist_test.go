@@ -29,4 +29,20 @@ func TestDev(t *testing.T) {
 	}
 
 	top.UnwrapAsNode().UnwrapAsNode().UnwrapAsNode().Error() // segfault test
+
+	testErr := errors.New("test error")
+	someErr := New(errors.New("lol")).Wrap(testErr).Wrap(errors.New("kek"))
+	if !someErr.Has(testErr) {
+		t.Errorf("\nexpected someErr to have testErr somewhere in the middle of the chain")
+	}
+
+	someErr.Unwrap()
+	if !someErr.Has(testErr) {
+		t.Errorf("\nexpected someErr to have testErr in the end of the chain")
+	}
+
+	someErr = someErr.UnwrapAsNode()
+	if !someErr.Has(testErr) {
+		t.Errorf("\nexpected someErr to have testErr as the head of the chain")
+	}
 }

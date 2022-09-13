@@ -30,6 +30,26 @@ func New(err error) (self *ErrNode) {
 	}
 }
 
+func (e *ErrNode) Has(err error) bool {
+	if e.err == err {
+		return true
+	}
+
+	tail := e
+	if tail.next == nil {
+		return false
+	}
+
+	for tail.next != nil {
+		tail = tail.next
+		if tail.err == err {
+			return true
+		}
+	}
+
+	return false
+}
+
 // Checks if `e` is standalone node or has children.
 func (e *ErrNode) HasChildren() bool {
 	return e.next == nil

@@ -14,6 +14,7 @@ type ErrNode struct {
 	next *ErrNode
 }
 
+// Constructor. If `nil` is passed internal `err` will be substituted with ErrEmpty.
 func New(err error) (self *ErrNode) {
 	if errAsErr, ok := err.(*ErrNode); ok {
 		return errAsErr
@@ -30,6 +31,7 @@ func New(err error) (self *ErrNode) {
 	}
 }
 
+// Returns true if underlying `err` of some node in the chain is of the same kind as given `err`.
 func (e *ErrNode) Has(err error) bool {
 	if e.err == err {
 		return true
@@ -56,6 +58,7 @@ func (e *ErrNode) HasChildren() bool {
 }
 
 // Sets data inside underlying map at `k`.
+// Use this to store context of error e.g. timestamp, location etc.
 func (e *ErrNode) Set(k string, v interface{}) (self *ErrNode) {
 	e.Data[k] = v
 	return e
@@ -67,7 +70,9 @@ func (e *ErrNode) Get(k string) (v interface{}, ok bool) {
 	return v, ok
 }
 
-// `e` wraps `child`. If `child` is not of type `Err`, `New()` is called.
+// Pushes back `child` to list with head `e`.
+// If `child` is not of type `Err`, `New()` is called.
+// Should be preferred to standard library methods when it comes to wrapping errors.
 func (e *ErrNode) Wrap(child error) (self *ErrNode) {
 	tail := e
 	for tail.next != nil {
@@ -82,8 +87,8 @@ func (e *ErrNode) Wrap(child error) (self *ErrNode) {
 	return e
 }
 
-// If `e.next` is not `nil` returns `next` while acting like a list pop back.
-// Otherwise returs underlying `error`.
+// Pops back element from the list with head `e`
+// If `e.next` is not `nil` returns `next`. Otherwise returs `e`'s underlying `error`.
 func (e *ErrNode) Unwrap() error {
 	tail := e
 	if tail.next == nil {
@@ -102,7 +107,7 @@ func (e *ErrNode) Unwrap() error {
 	return &res
 }
 
-// Same as `Unwrap()` but returns self when called on childless node.
+// Same as `Unwrap()` but returns `e` itself if it has no children.
 func (e *ErrNode) UnwrapAsNode() *ErrNode {
 	tail := e
 	if tail.next == nil {
@@ -149,6 +154,7 @@ func (e *ErrNode) json() string {
 	return fmt.Sprintf("{%s}", res)
 }
 
+// Proceed to errlist_test.go to see what output will be like.
 func (e ErrNode) Error() string {
 	res := e.json() + "\n"
 	err := e

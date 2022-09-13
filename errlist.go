@@ -126,8 +126,8 @@ func (e *ErrNode) UnwrapAsNode() *ErrNode {
 	return &res
 }
 
-// Rerurns `e`'s represented as json string.
-func (e *ErrNode) json() string {
+// Rerurns `e`'s represented as JSON string.
+func (e *ErrNode) JSON() string {
 	var res string
 
 	if e.err != ErrEmpty {
@@ -156,7 +156,7 @@ func (e *ErrNode) json() string {
 
 // Proceed to errlist_test.go to see what output will be like.
 func (e ErrNode) Error() string {
-	res := e.json() + "\n"
+	res := e.JSON() + "\n"
 	err := e
 	depth := 0
 	for err.next != nil {
@@ -165,7 +165,7 @@ func (e ErrNode) Error() string {
 		}
 		depth++
 
-		res += "  L " + err.next.json() + "\n"
+		res += "  L " + err.next.JSON() + "\n"
 		err = *err.next
 	}
 

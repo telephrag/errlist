@@ -45,4 +45,7 @@ func TestDev(t *testing.T) {
 	if !someErr.Has(testErr) {
 		t.Errorf("\nexpected someErr to have testErr as the head of the chain")
 	}
+
+	someErr.ReplaceErr(nil)
+	someErr.Error() // segfault check
 }

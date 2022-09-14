@@ -31,6 +31,15 @@ func New(err error) (self *ErrNode) {
 	}
 }
 
+// Replaces underlying `err` with `new`.
+// If `new` is `nil`, `ErrEmpty` will be used instead.
+func (e *ErrNode) ReplaceErr(new error) {
+	if new == nil {
+		e.err = ErrEmpty
+	}
+	e.err = new
+}
+
 // Returns true if underlying `err` of some node in the chain is of the same kind as given `err`.
 func (e *ErrNode) Has(err error) bool {
 	if e.err == err {

@@ -40,6 +40,11 @@ func (e *ErrNode) ReplaceErr(new error) {
 	e.err = new
 }
 
+// Checks if `e` has data and non-empty error.
+func (e *ErrNode) Empty() bool {
+	return len(e.Data) == 0 && e.err == ErrEmpty
+}
+
 // Returns true if underlying `err` of some node in the chain is of the same kind as given `err`.
 func (e *ErrNode) Has(err error) bool {
 	if e.err == err {
@@ -135,9 +140,14 @@ func (e *ErrNode) UnwrapAsNode() *ErrNode {
 	return &res
 }
 
-// Rerurns `e`'s represented as JSON string.
+// Returns `e`'s represented as JSON string.
+// If `e` is empty returns empty string.
 func (e *ErrNode) JSON() string {
 	var res string
+
+	if e.Empty() {
+		return ""
+	}
 
 	if e.err != ErrEmpty {
 		res = fmt.Sprintf("\"error\": \"%v\"", e.err) // TODO: use json.Marshal()
@@ -160,6 +170,7 @@ func (e *ErrNode) JSON() string {
 			res = fmt.Sprintf("\"data\": %s", data)
 		}
 	}
+
 	return fmt.Sprintf("{%s}", res)
 }
 
@@ -169,6 +180,11 @@ func (e ErrNode) Error() string {
 	err := e
 	depth := 0
 	for err.next != nil {
+		if err.next.Empty() {
+			err = *err.next
+			continue
+		}
+
 		for i := 0; i < depth; i++ {
 			res += "    "
 		}
